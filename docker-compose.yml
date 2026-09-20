@@ -1,0 +1,37 @@
+# Docker Compose for running Pilkasis on a VPS from a prebuilt Docker Hub image.
+#
+#   docker compose pull
+#   docker compose up -d
+#
+# Persistent data (SQLite database + uploaded photos) lives in named volumes so
+# it survives image updates and container recreation.
+#
+# Configure SESSION_SECRET in a `.env` file next to this compose file:
+#   SESSION_SECRET=<long-random-string>
+# Optional:
+#   IMAGE_TAG=latest        # or a specific commit sha / version tag
+#   APP_PORT=3100
+
+services:
+  app:
+    image: twizzcode/pemilihan-osis:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3100}:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_PATH: /data/data.db
+      STORAGE_DIR: /data/storage
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    volumes:
+      - pilkasis-data:/data
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pilkasis-data:
