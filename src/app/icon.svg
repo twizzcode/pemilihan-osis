@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pilkasis">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5cff"/>
+      <stop offset="1" stop-color="#5b3df0"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- ballot paper -->
+  <rect x="24" y="12" width="16" height="20" rx="2.5" fill="#ffffff"/>
+  <rect x="27.5" y="17" width="9" height="2.2" rx="1.1" fill="#c9c2ff"/>
+  <rect x="27.5" y="21.5" width="9" height="2.2" rx="1.1" fill="#c9c2ff"/>
+  <rect x="27.5" y="26" width="6" height="2.2" rx="1.1" fill="#c9c2ff"/>
+  <!-- check mark -->
+  <path d="M33 25.5l2.4 2.4 4.1-4.6" fill="none" stroke="#5b3df0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- box -->
+  <rect x="14" y="30" width="36" height="22" rx="4" fill="#ffffff" fill-opacity="0.16" stroke="#ffffff" stroke-width="2.5"/>
+  <rect x="26" y="30" width="12" height="3.5" rx="1.75" fill="#ffffff"/>
+</svg>
