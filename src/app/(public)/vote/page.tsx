@@ -45,7 +45,7 @@ export default async function VotePage() {
             {session.gender === "male" ? "Kategori Putra" : "Kategori Putri"}
           </Badge>
           <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
-            Pilih Ketua OSIS Pilihanmu
+            Pilih Ketua OSPA &amp; OSPI Pilihanmu
           </h2>
           <p className="mx-auto max-w-lg text-sm text-muted-foreground">
             Pelajari visi & misi setiap paslon, lalu tekan tombol{" "}

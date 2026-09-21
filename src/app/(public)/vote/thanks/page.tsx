@@ -31,7 +31,7 @@ export default function ThanksPage() {
           <CardTitle className="text-2xl">Terima kasih! 🎉</CardTitle>
           <CardDescription>
             Suara Anda telah berhasil dicatat. Partisipasi Anda sangat berarti
-            untuk menentukan pemimpin OSIS berikutnya.
+            untuk menentukan pemimpin OSPA &amp; OSPI berikutnya.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">

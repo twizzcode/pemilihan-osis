@@ -111,7 +111,7 @@ export default function CandidatesPage() {
       <div className="space-y-6">
         <PageHeader
           title="Paslon"
-          description="Kelola pasangan calon ketua OSIS."
+          description="Kelola pasangan calon ketua OSPA & OSPI."
         />
         <EmptyState
           icon={CalendarRangeIcon}

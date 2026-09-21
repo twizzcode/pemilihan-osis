@@ -60,12 +60,12 @@ export default async function AdminLoginPage() {
           <span className="flex size-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
             🗳️
           </span>
-          Pilkasis
+          PILKOSPAPI
         </div>
         <div className="relative z-10 space-y-8">
           <div className="space-y-3">
             <h1 className="text-3xl font-bold leading-tight">
-              Portal Admin Pemilihan Ketua OSIS
+              Portal Admin Pemilihan Ketua OSPA &amp; OSPI
             </h1>
             <p className="max-w-md text-primary-foreground/80">
               Kelola pemilihan dengan rapi — mulai dari data pemilih, paslon,
@@ -89,7 +89,7 @@ export default async function AdminLoginPage() {
           </ul>
         </div>
         <p className="relative z-10 text-xs text-primary-foreground/60">
-          © {new Date().getFullYear()} Pilkasis. Sistem Pemilihan Online.
+          © {new Date().getFullYear()} PILKOSPAPI. Sistem Pemilihan Online.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export default async function AdminLoginPage() {
             href="/"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground lg:hidden"
           >
-            <span className="text-lg">🗳️</span> Pilkasis
+            <span className="text-lg">🗳️</span> PILKOSPAPI
           </Link>
           <Button
             variant="outline"
@@ -117,7 +117,7 @@ export default async function AdminLoginPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Selamat datang 👋</CardTitle>
                 <CardDescription>
-                  Masuk untuk mengelola pemilihan ketua OSIS.
+                  Masuk untuk mengelola pemilihan ketua OSPA &amp; OSPI.
                 </CardDescription>
               </CardHeader>
               <CardContent>

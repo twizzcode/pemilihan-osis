@@ -15,7 +15,7 @@ import { getVoterSession } from "@/lib/auth";
 import { ensureDb } from "@/lib/db";
 import { getActiveEvent, getEventPhase } from "@/lib/events";
 
-export const metadata = { title: "Pemilihan Ketua OSIS" };
+export const metadata = { title: "Pemilihan Ketua OSPA & OSPI" };
 export const dynamic = "force-dynamic";
 
 const phaseText = {
@@ -49,9 +49,12 @@ export default async function VoterLoginPage() {
           </div>
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
-              Pemilihan Ketua OSIS
+              PILKOSPAPI
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-muted-foreground">
+              Pemilihan Ketua OSPA &amp; OSPI
+            </p>
+            <p className="pt-1 text-xs text-muted-foreground">
               {event
                 ? event.name
                 : "Belum ada pemilihan yang aktif saat ini."}

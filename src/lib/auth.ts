@@ -5,8 +5,8 @@ import { cookies } from "next/headers";
 
 const SECRET = process.env.SESSION_SECRET ?? "dev-insecure-secret-change-me";
 
-export const ADMIN_COOKIE = "pilkasis_admin";
-export const VOTER_COOKIE = "pilkasis_voter";
+export const ADMIN_COOKIE = "pilkospapi_admin";
+export const VOTER_COOKIE = "pilkospapi_voter";
 
 export type AdminSession = {
   adminId: number;

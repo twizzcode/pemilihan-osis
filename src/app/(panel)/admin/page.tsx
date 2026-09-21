@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
       <div className="space-y-6">
         <PageHeader
           title="Dashboard"
-          description="Ringkasan pemilihan ketua OSIS."
+          description="Ringkasan pemilihan ketua OSPA & OSPI."
         />
         <EmptyState
           icon={CalendarRangeIcon}

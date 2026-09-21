@@ -18,7 +18,7 @@ export const admins = sqliteTable("admins", {
     .default(sql`(unixepoch())`),
 });
 
-/** A voting event, e.g. "Pilkasis 2025". Only one is active at a time. */
+/** A voting event, e.g. "PILKOSPAPI 2025". Only one is active at a time. */
 export const events = sqliteTable("events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),

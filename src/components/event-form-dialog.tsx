@@ -86,7 +86,7 @@ export function EventFormDialog({
                 id="name"
                 name="name"
                 defaultValue={event?.name}
-                placeholder="Contoh: Pemilihan Ketua OSIS 2025/2026"
+                placeholder="Contoh: Pemilihan Ketua OSPA & OSPI 2025/2026"
                 required
               />
             </Field>
