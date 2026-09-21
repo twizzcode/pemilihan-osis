@@ -1,6 +1,6 @@
-# Pilkasis — Sistem Pemilihan Ketua OSIS
+# PILKOSPAPI — Pemilihan Ketua OSPA & OSPI
 
-Aplikasi pemilihan ketua OSIS berbasis web dengan pemisahan paslon **Putra** dan
+Aplikasi pemilihan ketua OSPA & OSPI berbasis web dengan pemisahan paslon **Putra** dan
 **Putri**. Dirancang untuk dijalankan sepenuhnya di server sendiri (VPS) tanpa
 layanan eksternal — database dan foto tersimpan lokal.
 
@@ -80,13 +80,13 @@ Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
 2. Set variabel lingkungan di produksi (mis. via `.env.production` atau systemd):
 
    ```
-   DATABASE_PATH=/var/lib/pilkasis/data.db
-   STORAGE_DIR=/var/lib/pilkasis/storage
+   DATABASE_PATH=/var/lib/pilkospapi/data.db
+   STORAGE_DIR=/var/lib/pilkospapi/storage
    SESSION_SECRET=<string-acak-panjang>
    NODE_ENV=production
    ```
 
-3. Pastikan folder `/var/lib/pilkasis/` ada dan bisa ditulis oleh proses server.
+3. Pastikan folder `/var/lib/pilkospapi/` ada dan bisa ditulis oleh proses server.
    Dengan begitu, mengganti/men-deploy ulang kode tidak menghapus data.
 
 4. (Disarankan) Jalankan di balik reverse proxy (Nginx/Caddy) untuk HTTPS.
@@ -94,66 +94,12 @@ Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
 > Catatan: `better-sqlite3` memerlukan build native. Pastikan VPS memiliki
 > `build-essential` / `python3` saat `bun install` / `npm install`.
 
-## Deploy dengan Docker (Docker Hub)
-
-Image tersedia di Docker Hub sebagai `twizzcode/pemilihan-osis`. VPS hanya perlu
-menarik image — **tanpa build di VPS**.
-
-### Membangun & push image (dari komputer dev)
-
-```bash
-docker login                          # jika repo Docker Hub private
-scripts/docker-push.sh                # tag :latest dan :<git-sha>
-```
-
-Atau manual:
-
-```bash
-docker build -t twizzcode/pemilihan-osis:latest .
-docker push twizzcode/pemilihan-osis:latest
-```
-
-### Menjalankan di VPS
-
-1. Salin `docker-compose.yml` dan `.env.docker.example` (rename jadi `.env`) ke VPS:
-
-   ```bash
-   cp .env.docker.example .env
-   # isi SESSION_SECRET (mis. hasil `openssl rand -hex 32`)
-   ```
-
-2. Jalankan:
-
-   ```bash
-   docker compose pull
-   docker compose up -d
-   ```
-
-   Aplikasi tersedia di `http://<ip-vps>:3100`.
-
-3. Update ke versi terbaru:
-
-   ```bash
-   docker compose pull && docker compose up -d
-   ```
-
-   Ingin menyematkan versi tertentu (rollback): `IMAGE_TAG=<sha> docker compose up -d`.
-
-### Catatan
-
-- **Data persisten** (SQLite + foto) disimpan di named volume `pilkasis-data`
-  (`/data` di dalam container), jadi **tidak hilang saat update image**.
-- Port host default **3100** (bisa diubah lewat `APP_PORT` di `.env`); container
-  tetap mendengarkan port `3000` di dalam.
-- Agar data tidak hilang, **jangan** ubah/ hapus volume `pilkasis-data`.
-
 ## Skrip
 
-| Perintah                    | Fungsi                                        |
-| --------------------------- | --------------------------------------------- |
-| `bun run dev`               | Menjalankan server pengembangan.              |
-| `bun run build`             | Build produksi.                               |
-| `bun run start`             | Menjalankan hasil build produksi.             |
-| `bun run lint`              | Menjalankan ESLint.                           |
-| `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema.        |
-| `scripts/docker-push.sh`    | Build & push image ke Docker Hub.             |
+| Perintah             | Fungsi                                   |
+| -------------------- | ---------------------------------------- |
+| `bun run dev`        | Menjalankan server pengembangan.         |
+| `bun run build`      | Build produksi.                          |
+| `bun run start`      | Menjalankan hasil build produksi.        |
+| `bun run lint`       | Menjalankan ESLint.                      |
+| `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema. |
