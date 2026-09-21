@@ -69,37 +69,73 @@ NIS,Nama,Kelas,Gender
 Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
 **harus berada di volume/direktori persisten** agar tidak hilang saat redeploy.
 
-### Cara cepat: build standalone + rsync
+### Cara cepat: `scripts/deploy.sh` (aman, tidak menghapus data)
 
-Hasilkan bundle mandiri (berisi `server.js`, `node_modules` yang dibutuhkan,
-`public/`, `.next/static`, dan `drizzle/`) lalu kirim ke server:
+Script ini build bundle standalone lalu rsync ke server — **database (`data.db`),
+folder `storage/`, dan `.env` di server tidak akan pernah tertimpa atau terhapus**
+walau memakai `--delete`.
 
 ```bash
-# 1. Build bundle standalone di komputer dev
+# build + deploy
+scripts/deploy.sh
+
+# build + deploy + restart service systemd di server
+scripts/deploy.sh --restart
+
+# tanpa build (hanya kirim hasil build yang sudah ada)
+scripts/deploy.sh --no-build
+```
+
+Konfigurasi via env var (opsional):
+
+```bash
+DEPLOY_HOST=twizz@43.156.14.234 \
+DEPLOY_PATH=/var/www/osis-sma \
+DEPLOY_SERVICE=osis-sma \
+scripts/deploy.sh --restart
+```
+
+### Manual: build standalone + rsync
+
+```bash
 bun run build:standalone      # output di .next/standalone/
 
-# 2. Kirim ke server (database & storage TIDAK ikut, jadi aman)
-rsync -avz --delete --exclude='.env' \
+# Exclude data.db/storage/.env supaya aman walau pakai --delete
+rsync -avz --delete \
+  --exclude='.env' --exclude='.env.*' \
+  --exclude='data.db' --exclude='data.db-shm' --exclude='data.db-wal' \
+  --exclude='storage/' \
   .next/standalone/ \
   twizz@43.156.14.234:/var/www/osis-sma/
 ```
 
-Di server, jalankan (sekali saja, di dalam `/var/www/osis-sma`):
+Di server, buat `.env` **sekali saja** (di dalam `/var/www/osis-sma`) dan arahkan
+`DATABASE_PATH` + `STORAGE_DIR` ke direktori persisten **di luar** folder deploy:
 
 ```bash
-cp .env.example .env    # isi SESSION_SECRET, DATABASE_PATH, STORAGE_DIR
+# /var/www/osis-sma/.env
+DATABASE_PATH=/var/lib/pilkospapi/data.db
+STORAGE_DIR=/var/lib/pilkospapi/storage
+SESSION_SECRET=<string-acak-panjang>
+NODE_ENV=production
+```
+
+```bash
+# sekali di server
+sudo mkdir -p /var/lib/pilkospapi/storage
+sudo chown -R "$USER":"$USER" /var/lib/pilkospapi
 bun server.js           # atau: node server.js
 ```
 
 Agar berjalan permanen, buat service systemd yang menjalankan
 `bun server.js` dengan `WorkingDirectory=/var/www/osis-sma`.
 
-> **Penting:** `data.db` dan folder `storage/` tidak ikut ter-rsync, jadi data
-> pemilih, paslon, suara, dan foto di server tetap aman setiap kali deploy ulang.
-> Arahkan `DATABASE_PATH` dan `STORAGE_DIR` ke direktori persisten di server
-> (mis. `/var/lib/pilkospapi/`).
+> **Penting:** `data.db` dan folder `storage/` di server **tidak pernah** ikut
+> ter-rsync (sudah dikecualikan), jadi data pemilih, paslon, suara, dan foto
+> tetap aman setiap kali deploy ulang. Mengarahkannya ke `/var/lib/pilkospapi/`
+> adalah lapisan pengaman tambahan.
 
-### Cara manual
+### Cara manual (tanpa standalone)
 
 1. Build aplikasi:
 
@@ -136,3 +172,4 @@ Agar berjalan permanen, buat service systemd yang menjalankan
 | `bun run start`       | Menjalankan hasil build produksi.                            |
 | `bun run lint`        | Menjalankan ESLint.                                          |
 | `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema.                |
+| `scripts/deploy.sh`   | Build standalone + rsync ke server (aman, tidak hapus data). |
