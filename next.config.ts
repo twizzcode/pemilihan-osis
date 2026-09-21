@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   // Native modules that must stay external on the server.
   serverExternalPackages: ["better-sqlite3", "sharp"],
+  experimental: {
+    // Allow photo uploads up to 5MB (default Server Action limit is 1MB).
+    // Kept a bit above PHOTO_MAX_BYTES so the app-level check runs first.
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
 };
 
 export default nextConfig;
