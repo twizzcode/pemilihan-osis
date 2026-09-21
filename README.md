@@ -69,6 +69,38 @@ NIS,Nama,Kelas,Gender
 Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
 **harus berada di volume/direktori persisten** agar tidak hilang saat redeploy.
 
+### Cara cepat: build standalone + rsync
+
+Hasilkan bundle mandiri (berisi `server.js`, `node_modules` yang dibutuhkan,
+`public/`, `.next/static`, dan `drizzle/`) lalu kirim ke server:
+
+```bash
+# 1. Build bundle standalone di komputer dev
+bun run build:standalone      # output di .next/standalone/
+
+# 2. Kirim ke server (database & storage TIDAK ikut, jadi aman)
+rsync -avz --delete --exclude='.env' \
+  .next/standalone/ \
+  twizz@43.156.14.234:/var/www/osis-sma/
+```
+
+Di server, jalankan (sekali saja, di dalam `/var/www/osis-sma`):
+
+```bash
+cp .env.example .env    # isi SESSION_SECRET, DATABASE_PATH, STORAGE_DIR
+bun server.js           # atau: node server.js
+```
+
+Agar berjalan permanen, buat service systemd yang menjalankan
+`bun server.js` dengan `WorkingDirectory=/var/www/osis-sma`.
+
+> **Penting:** `data.db` dan folder `storage/` tidak ikut ter-rsync, jadi data
+> pemilih, paslon, suara, dan foto di server tetap aman setiap kali deploy ulang.
+> Arahkan `DATABASE_PATH` dan `STORAGE_DIR` ke direktori persisten di server
+> (mis. `/var/lib/pilkospapi/`).
+
+### Cara manual
+
 1. Build aplikasi:
 
    ```bash
@@ -96,10 +128,11 @@ Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
 
 ## Skrip
 
-| Perintah             | Fungsi                                   |
-| -------------------- | ---------------------------------------- |
-| `bun run dev`        | Menjalankan server pengembangan.         |
-| `bun run build`      | Build produksi.                          |
-| `bun run start`      | Menjalankan hasil build produksi.        |
-| `bun run lint`       | Menjalankan ESLint.                      |
-| `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema. |
+| Perintah              | Fungsi                                                       |
+| --------------------- | ------------------------------------------------------------ |
+| `bun run dev`         | Menjalankan server pengembangan.                             |
+| `bun run build`       | Build produksi biasa (`.next`).                              |
+| `bun run build:standalone` | Build bundle mandiri di `.next/standalone/` untuk di-rsync. |
+| `bun run start`       | Menjalankan hasil build produksi.                            |
+| `bun run lint`        | Menjalankan ESLint.                                          |
+| `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema.                |
