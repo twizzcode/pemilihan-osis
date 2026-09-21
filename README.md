@@ -66,101 +66,95 @@ NIS,Nama,Kelas,Gender
 
 ## Deploy ke VPS
 
-Data persisten ada di dua tempat: file `data.db` dan folder `storage/`. Keduanya
-**harus berada di volume/direktori persisten** agar tidak hilang saat redeploy.
+Deploy memakai **bundle standalone** (semua dependency ikut, tak perlu build di
+server). Yang penting: **database (`data.db`) dan folder `storage/` tidak boleh
+ikut ter-rsync**, agar data tidak terhapus walau pakai `--delete`.
 
-### Cara cepat: `scripts/deploy.sh` (aman, tidak menghapus data)
-
-Script ini build bundle standalone lalu rsync ke server — **database (`data.db`),
-folder `storage/`, dan `.env` di server tidak akan pernah tertimpa atau terhapus**
-walau memakai `--delete`.
+### 1. Build di komputer dev
 
 ```bash
-# build + deploy
-scripts/deploy.sh
-
-# build + deploy + restart service systemd di server
-scripts/deploy.sh --restart
-
-# tanpa build (hanya kirim hasil build yang sudah ada)
-scripts/deploy.sh --no-build
-```
-
-Konfigurasi via env var (opsional):
-
-```bash
-DEPLOY_HOST=twizz@43.156.14.234 \
-DEPLOY_PATH=/var/www/osis-sma \
-DEPLOY_SERVICE=osis-sma \
-scripts/deploy.sh --restart
-```
-
-### Manual: build standalone + rsync
-
-```bash
+bun install
 bun run build:standalone      # output di .next/standalone/
+```
 
-# Exclude data.db/storage/.env supaya aman walau pakai --delete
+### 2. Kirim ke server
+
+```bash
 rsync -avz --delete \
-  --exclude='.env' --exclude='.env.*' \
-  --exclude='data.db' --exclude='data.db-shm' --exclude='data.db-wal' \
+  --exclude='.env' \
+  --exclude='data.db' \
+  --exclude='data.db-shm' \
+  --exclude='data.db-wal' \
   --exclude='storage/' \
   .next/standalone/ \
   twizz@43.156.14.234:/var/www/osis-sma/
 ```
 
-Di server, buat `.env` **sekali saja** (di dalam `/var/www/osis-sma`) dan arahkan
-`DATABASE_PATH` + `STORAGE_DIR` ke direktori persisten **di luar** folder deploy:
+> Exclude `data.db*`, `storage/`, dan `.env` **wajib** ada supaya rsync tidak
+> menghapus database, foto, dan konfigurasi di server.
+
+### 3. Setup awal di VPS (sekali saja)
 
 ```bash
-# /var/www/osis-sma/.env
-DATABASE_PATH=/var/lib/pilkospapi/data.db
-STORAGE_DIR=/var/lib/pilkospapi/storage
-SESSION_SECRET=<string-acak-panjang>
-NODE_ENV=production
-```
-
-```bash
-# sekali di server
+# a) Buat folder data persisten (di LUAR folder deploy)
 sudo mkdir -p /var/lib/pilkospapi/storage
-sudo chown -R "$USER":"$USER" /var/lib/pilkospapi
-bun server.js           # atau: node server.js
+sudo chown -R $USER:$USER /var/lib/pilkospapi
+
+# b) Buat file .env di folder deploy
+cd /var/www/osis-sma
+cp .env.example .env
+nano .env        # isi SESSION_SECRET (openssl rand -hex 32)
+
+# c) Jalankan (test dulu di foreground)
+bun server.js    # atau: node server.js
 ```
 
-Agar berjalan permanen, buat service systemd yang menjalankan
-`bun server.js` dengan `WorkingDirectory=/var/www/osis-sma`.
+Buka `http://<ip-vps>:3000`. Login admin: `admin` / `admin123` (segera ganti
+di menu Pengaturan).
 
-> **Penting:** `data.db` dan folder `storage/` di server **tidak pernah** ikut
-> ter-rsync (sudah dikecualikan), jadi data pemilih, paslon, suara, dan foto
-> tetap aman setiap kali deploy ulang. Mengarahkannya ke `/var/lib/pilkospapi/`
-> adalah lapisan pengaman tambahan.
+### 4. Jalankan permanen (systemd)
 
-### Cara manual (tanpa standalone)
+Buat `/etc/systemd/system/pilkospapi.service`:
 
-1. Build aplikasi:
+```ini
+[Unit]
+Description=PILKOSPAPI (Pemilihan OSPA & OSPI)
+After=network.target
 
-   ```bash
-   bun install
-   bun run build
-   bun run start        # menjalankan server produksi di port 3000
-   ```
+[Service]
+Type=simple
+WorkingDirectory=/var/www/osis-sma
+EnvironmentFile=/var/www/osis-sma/.env
+ExecStart=/usr/bin/bun server.js
+Restart=always
+RestartSec=3
+User=twizz
 
-2. Set variabel lingkungan di produksi (mis. via `.env.production` atau systemd):
+[Install]
+WantedBy=multi-user.target
+```
 
-   ```
-   DATABASE_PATH=/var/lib/pilkospapi/data.db
-   STORAGE_DIR=/var/lib/pilkospapi/storage
-   SESSION_SECRET=<string-acak-panjang>
-   NODE_ENV=production
-   ```
+Lalu:
 
-3. Pastikan folder `/var/lib/pilkospapi/` ada dan bisa ditulis oleh proses server.
-   Dengan begitu, mengganti/men-deploy ulang kode tidak menghapus data.
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now pilkospapi
+sudo systemctl status pilkospapi     # cek status
+```
 
-4. (Disarankan) Jalankan di balik reverse proxy (Nginx/Caddy) untuk HTTPS.
+### 5. Update (deploy ulang)
 
-> Catatan: `better-sqlite3` memerlukan build native. Pastikan VPS memiliki
-> `build-essential` / `python3` saat `bun install` / `npm install`.
+Ulangi langkah 1–2, lalu:
+
+```bash
+sudo systemctl restart pilkospapi
+```
+
+> **Penting:** karena `data.db` & `storage/` dikecualikan dari rsync dan
+> `DATABASE_PATH`/`STORAGE_DIR` diarahkan ke `/var/lib/pilkospapi/`, data
+> pemilih, paslon, suara, dan foto **aman** setiap deploy ulang.
+
+> (Disarankan) Jalankan di balik reverse proxy (Nginx/Caddy) untuk HTTPS.
 
 ## Skrip
 
@@ -172,4 +166,3 @@ Agar berjalan permanen, buat service systemd yang menjalankan
 | `bun run start`       | Menjalankan hasil build produksi.                            |
 | `bun run lint`        | Menjalankan ESLint.                                          |
 | `bunx drizzle-kit generate` | Membuat migrasi dari perubahan schema.                |
-| `scripts/deploy.sh`   | Build standalone + rsync ke server (aman, tidak hapus data). |
